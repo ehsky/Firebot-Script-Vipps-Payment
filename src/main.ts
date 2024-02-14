@@ -7,7 +7,7 @@ interface Params {
   client_id: string;
   client_secret: string;
   merchantSerialNumber: string;
-  "Ocp-Apim-Subscription-Key": string;
+  ocpApiSubscriptionKey: string;
   baseUrl: string;
 }
 
@@ -41,11 +41,11 @@ const script: Firebot.CustomScript<Params> = {
         description: "Merchant Serial Number",
         secondaryDescription: "Enter the merchant serial number here",
       },
-      "Ocp-Apim-Subscription-Key": {
+      ocpApiSubscriptionKey: {
         type: "string",
         default: "",
-        description: "Ocp Apim Subscription Key",
-        secondaryDescription: "Enter the Ocp-Apim-Subscription-Key here",
+        description: "Ocp-Api-Subscription-Key",
+        secondaryDescription: "Enter the Ocp-Api-Subscription-Key here",
       },
       baseUrl: {
         type: "string",
@@ -64,8 +64,7 @@ const script: Firebot.CustomScript<Params> = {
       client_id: runRequest.parameters.client_id,
       client_secret: runRequest.parameters.client_secret,
       merchantSerialNumber: runRequest.parameters.merchantSerialNumber,
-      Ocp_Apim_Subscription_Key:
-        runRequest.parameters["Ocp-Apim-Subscription-Key"],
+      Ocp_Apim_Subscription_Key: runRequest.parameters.ocpApiSubscriptionKey,
       vipps_system_name: "Firebot",
       vipps_system_version: "2.0",
       vipps_system_plugin_name: appVersion.scriptOutputName,
