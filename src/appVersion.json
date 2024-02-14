@@ -1,0 +1,6 @@
+{
+  "version": "1.0.0",
+  "scriptOutputName": "Vipps Payment Alert for Firebot",
+  "author": "ehsky (https://github.com/ehsky)",
+  "description": "Receive alerts for Vipps payments in Firebot"
+}
