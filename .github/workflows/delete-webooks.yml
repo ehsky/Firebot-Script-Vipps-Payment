@@ -1,0 +1,70 @@
+name: Delete Webhooks
+on:
+  workflow_dispatch:
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get access token
+        id: get_token
+        run: |
+          const httpm = require('@actions/http-client');
+          let http = new httpm.HttpClient('vipps-action');
+          let res = await http.get('${{ secrets.VIPPS_API_URL }}/accessToken/get', {
+            headers: {
+              'client_id': '${{ secrets.CLIENT_ID }}',
+              'client_secret': '${{ secrets.CLIENT_SECRET }}',
+              'Ocp-Apim-Subscription-Key': '${{ secrets.OCP_APIM_SUBSCRIPTION_KEY }}',
+              'Merchant-Serial-Number': '${{ secrets.MERCHANT_SERIAL_NUMBER }}',
+              'Vipps-System-Name': 'Github Action',
+              'Vipps-System-Version': '2.0',
+              'Vipps-System-Plugin-Name': 'Github Action Vipps Payment Webhook',
+              'Vipps-System-Plugin-Version': '1.0'
+            }
+          });
+          let token = res.result;
+          console.log(`::set-output name=token::${token}`);
+        env:
+          NODE_PATH: ${{ runner.workspace }}/node_modules
+
+      - name: Get webhooks
+        id: get_webhooks
+        run: |
+          const httpm = require('@actions/http-client');
+          let http = new httpm.HttpClient('vipps-action');
+          let res = await http.get('${{ secrets.VIPPS_API_URL }}/webhooks/v1/webhooks', {
+            headers: {
+              'Authorization': `Bearer ${{ steps.get_token.outputs.token }}`
+            }
+          });
+          let webhooks = res.result.webhooks;
+          console.log(`::set-output name=webhooks::${JSON.stringify(webhooks)}`);
+        env:
+          NODE_PATH: ${{ runner.workspace }}/node_modules
+
+      - name: Delete webhooks
+        run: |
+          const httpm = require('@actions/http-client');
+          let http = new httpm.HttpClient('vipps-action');
+          let webhooks = JSON.parse('${{ steps.get_webhooks.outputs.webhooks }}');
+          for (let webhook of webhooks) {
+            await http.post('${{ secrets.VIPPS_API_URL }}/webhooks/v1/webhooks/' + webhook.id, {
+              headers: {
+                'Authorization': `Bearer ${{ steps.get_token.outputs.token }}`
+              }
+            });
+          }
+        env:
+          NODE_PATH: ${{ runner.workspace }}/node_modules
